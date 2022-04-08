@@ -53,7 +53,9 @@ export class StudentsController extends BaseController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    return this.studentsService.update(id, updateStudentDto);
+    const studentObj = await this.studentsService.update(id, updateStudentDto);
+
+    return this.ok(res, studentObj);
   }
 
   @Delete(':id')

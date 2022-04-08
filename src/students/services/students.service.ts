@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { userInfo } from 'os';
 import { BaseController } from 'src/common/base.controller';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from '../dto/create-student.dto';
@@ -87,21 +88,33 @@ export class StudentsService {
   /**
    * Update a student by ID.
    */
-  async update(id: number, updateStudentDto: UpdateStudentDto) {
-    let errorResponseData;
+  async update(
+    id: number,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
     let successResponseData;
     let checkResponseData;
 
     const { name, email, dob, age } = updateStudentDto;
 
-    try {
-      checkResponseData = await this.studentsRepo.findOneOrFail({
-        where: { id },
-      });
+    checkResponseData = await this.findOne(id);
 
-      if (!checkResponseData) {
-      }
-    } catch (error) {}
+    try {
+      checkResponseData.name = name;
+      checkResponseData.email = email;
+      checkResponseData.dob = dob;
+      checkResponseData.age = age;
+
+      successResponseData = await this.studentsRepo.save(checkResponseData);
+
+      return successResponseData;
+    } catch (error) {
+      throw new BadRequestException({
+        success: false,
+        error: error,
+        data: null,
+      });
+    }
   }
 
   /**
