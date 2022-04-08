@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ResponseHandler } from 'src/helpers/response.helper';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Student } from '../entities/student.entity';
 
 @Injectable()
-export class StudentsService extends ResponseHandler {
+export class StudentsService {
   constructor(
     @InjectRepository(Student) private studentsRepo: Repository<Student>,
-  ) {
-    super();
-  }
+  ) {}
 
-  async create(createStudentDto: CreateStudentDto) {
-    let errorResponseData;
+  /**
+   * Create a student.
+   */
+  async create(createStudentDto: CreateStudentDto): Promise<Student> {
     let successResponseData;
     let passRequestData;
 
@@ -30,28 +29,34 @@ export class StudentsService extends ResponseHandler {
       });
 
       successResponseData = await this.studentsRepo.save(passRequestData);
-      return this.ok(successResponseData);
+
+      return successResponseData;
     } catch (error) {
-      errorResponseData = error.message;
-      return this.fail(errorResponseData);
+      console.log(error.message);
+      return null;
     }
   }
 
-  async findAll() {
-    let errorResponseData;
+  /**
+   * Retrieve all students.
+   */
+  async findAll(): Promise<Student[]> {
     let successResponseData;
 
     try {
       successResponseData = await this.studentsRepo.find();
-      return this.ok(successResponseData);
+
+      return successResponseData;
     } catch (error) {
-      errorResponseData = error.message;
-      return this.fail(errorResponseData);
+      console.log(error.message);
+      return null;
     }
   }
 
-  async findOne(id: number) {
-    let errorResponseData;
+  /**
+   * Retrieve a student by ID.
+   */
+  async findOne(id: number): Promise<Student> {
     let successResponseData;
 
     try {
@@ -59,17 +64,16 @@ export class StudentsService extends ResponseHandler {
         where: { id },
       });
 
-      if (!successResponseData) {
-        return this.fail(successResponseData);
-      }
-
-      return this.ok(successResponseData);
+      return successResponseData;
     } catch (error) {
-      errorResponseData = error.message;
-      return this.fail(errorResponseData);
+      console.log(error.message);
+      return null;
     }
   }
 
+  /**
+   * Update a student by ID.
+   */
   async update(id: number, updateStudentDto: UpdateStudentDto) {
     let errorResponseData;
     let successResponseData;
@@ -83,13 +87,14 @@ export class StudentsService extends ResponseHandler {
       });
 
       if (!checkResponseData) {
-        return this.fail(checkResponseData);
       }
     } catch (error) {}
   }
 
-  async remove(id: number) {
-    let errorResponseData;
+  /**
+   * Remove a student by ID.
+   */
+  async remove(id: number): Promise<Student> {
     let successResponseData;
     let checkResponseData;
 
@@ -98,15 +103,12 @@ export class StudentsService extends ResponseHandler {
         where: { id },
       });
 
-      if (!checkResponseData) {
-        return this.fail(checkResponseData);
-      }
-
       successResponseData = await this.studentsRepo.remove(checkResponseData);
-      return this.ok(successResponseData);
+
+      return successResponseData;
     } catch (error) {
-      errorResponseData = error.message;
-      return this.fail(errorResponseData);
+      console.log(error.message);
+      return null;
     }
   }
 }
