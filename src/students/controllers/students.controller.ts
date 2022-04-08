@@ -3,11 +3,11 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Req,
   Res,
+  Put,
 } from '@nestjs/common';
 import { StudentsService } from '../services/students.service';
 import { CreateStudentDto } from '../dto/create-student.dto';
@@ -28,41 +28,33 @@ export class StudentsController extends BaseController {
     @Res() res: Response,
   ) {
     const studentObj = await this.studentsService.create(createStudentDto);
-    if (studentObj) {
-      return this.created(res, studentObj);
-    } else {
-      return this.fail(res, studentObj);
-    }
+
+    return this.created(res, studentObj);
   }
 
   @Get()
   async findAll(@Req() req: Request, @Res() res: Response) {
     const studentsObj = await this.studentsService.findAll();
-    if (studentsObj) {
-      return this.ok(res, studentsObj);
-    } else {
-      return this.notFound(res, studentsObj);
-    }
+
+    return this.ok(res, studentsObj);
   }
 
   @Get(':id')
-  async findOne(
+  async findOne(@Param('id') id: number, req: Request, @Res() res: Response) {
+    const studentObj = await this.studentsService.findOne(id);
+
+    return this.ok(res, studentObj);
+  }
+
+  @Put(':id')
+  async update(
     @Param('id') id: number,
+    @Body() updateStudentDto: UpdateStudentDto,
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const studentObj = await this.studentsService.findOne(id);
-    if (studentObj) {
-      return this.ok(res, studentObj);
-    } else {
-      return this.notFound(res, studentObj);
-    }
+    return this.studentsService.update(id, updateStudentDto);
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto) {
-  //   return this.studentsService.update(+id, updateStudentDto);
-  // }
 
   @Delete(':id')
   async remove(
@@ -71,10 +63,7 @@ export class StudentsController extends BaseController {
     @Res() res: Response,
   ) {
     const studentObj = await this.studentsService.remove(+id);
-    if (studentObj) {
-      return this.ok(res, studentObj);
-    } else {
-      return this.notFound(res, studentObj);
-    }
+
+    return this.ok(res, studentObj);
   }
 }

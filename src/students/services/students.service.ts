@@ -1,5 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseController } from 'src/common/base.controller';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
@@ -32,8 +38,11 @@ export class StudentsService {
 
       return successResponseData;
     } catch (error) {
-      console.log(error.message);
-      return null;
+      throw new BadRequestException({
+        success: false,
+        error: error,
+        data: null,
+      });
     }
   }
 
@@ -43,14 +52,18 @@ export class StudentsService {
   async findAll(): Promise<Student[]> {
     let successResponseData;
 
-    try {
-      successResponseData = await this.studentsRepo.find();
+    successResponseData = await this.studentsRepo.find();
 
-      return successResponseData;
-    } catch (error) {
-      console.log(error.message);
-      return null;
+    if (!successResponseData) {
+      const error = 'Bad Request';
+      throw new BadRequestException({
+        success: false,
+        error: error,
+        data: null,
+      });
     }
+
+    return successResponseData;
   }
 
   /**
@@ -59,16 +72,16 @@ export class StudentsService {
   async findOne(id: number): Promise<Student> {
     let successResponseData;
 
-    try {
-      successResponseData = await this.studentsRepo.findOneOrFail({
-        where: { id },
-      });
+    successResponseData = await this.studentsRepo.findOne({
+      where: { id },
+    });
 
-      return successResponseData;
-    } catch (error) {
-      console.log(error.message);
-      return null;
+    if (!successResponseData) {
+      const error = 'Student does not exist';
+      throw new NotFoundException({ success: false, error: error, data: null });
     }
+
+    return successResponseData;
   }
 
   /**
@@ -98,17 +111,18 @@ export class StudentsService {
     let successResponseData;
     let checkResponseData;
 
-    try {
-      checkResponseData = await this.studentsRepo.findOneOrFail({
-        where: { id },
-      });
+    checkResponseData = await this.findOne(id);
 
+    try {
       successResponseData = await this.studentsRepo.remove(checkResponseData);
 
       return successResponseData;
     } catch (error) {
-      console.log(error.message);
-      return null;
+      throw new BadRequestException({
+        success: false,
+        error: error,
+        data: null,
+      });
     }
   }
 }
