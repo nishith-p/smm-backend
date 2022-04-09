@@ -68,6 +68,26 @@ export class StudentsService {
   }
 
   /**
+   * Retrieve all students by query.
+   */
+  async findAllByQuery(alias: string) {
+    let successResponseData;
+
+    successResponseData = await this.studentsRepo.createQueryBuilder(alias);
+
+    if (!successResponseData) {
+      const error = 'Bad Request';
+      throw new BadRequestException({
+        success: false,
+        error: error,
+        data: null,
+      });
+    }
+
+    return successResponseData;
+  }
+
+  /**
    * Retrieve a student by ID.
    */
   async findOne(id: number): Promise<Student> {

@@ -17,6 +17,9 @@ import { BaseController } from 'src/common/base.controller';
 
 @Controller('students')
 export class StudentsController extends BaseController {
+  // /                       get, post
+  // /:id                    get, put, delete
+
   constructor(private readonly studentsService: StudentsService) {
     super();
   }
@@ -32,9 +35,35 @@ export class StudentsController extends BaseController {
     return this.created(res, studentObj);
   }
 
+  // @Get()
+  // async findAll(@Req() req: Request, @Res() res: Response) {
+  //   const studentsObj = await this.studentsService.findAll();
+
+  //   return this.ok(res, studentsObj);
+  // }
+
   @Get()
   async findAll(@Req() req: Request, @Res() res: Response) {
-    const studentsObj = await this.studentsService.findAll();
+    const builder = await this.studentsService.findAllByQuery('students');
+
+    //Search by Name
+    if (req.query.s) {
+      builder.where('students.name LIKE :s', { s: `%${req.query.s}%` });
+    }
+
+    //Pagination
+    const page: number = parseInt(req.query.page as any) || 1;
+    const perPage = 25;
+    const total = await builder.getCount();
+
+    builder.offset((page - 1) * perPage).limit(perPage);
+
+    const studentsObj = {
+      data: await builder.getMany(),
+      total: total,
+      page: page,
+      last_page: Math.ceil(total / perPage),
+    };
 
     return this.ok(res, studentsObj);
   }
