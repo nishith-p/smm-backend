@@ -8,12 +8,15 @@ import {
   Req,
   Res,
   Put,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { StudentsService } from '../services/students.service';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Request, Response } from 'express';
 import { BaseController } from 'src/common/base.controller';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('students')
 export class StudentsController extends BaseController {
@@ -96,5 +99,17 @@ export class StudentsController extends BaseController {
     const studentObj = await this.studentsService.remove(+id);
 
     return this.ok(res, studentObj);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const fileObj = await this.studentsService.importExcel(file);
+
+    return this.ok(res, fileObj);
   }
 }
