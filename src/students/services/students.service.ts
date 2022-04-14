@@ -164,6 +164,8 @@ export class StudentsService {
   async importExcel(file: Express.Multer.File) {
     try {
       let students = [];
+      let formattedDate;
+      let currentAge;
       let workbook = new ExcelJS.Workbook();
 
       await workbook.xlsx.load(file.buffer).then(() => {
@@ -177,11 +179,11 @@ export class StudentsService {
             age: '',
           };
 
-          let formattedDate = moment(
+          formattedDate = moment(
             new Date(sheet.getRow(i).getCell(3).toString()),
           ).format('YYYY-MM-DD');
 
-          let currentAge = moment().diff(formattedDate, 'years');
+          currentAge = moment().diff(formattedDate, 'years');
 
           student.name = sheet.getRow(i).getCell(1).toString();
           student.email = sheet.getRow(i).getCell(2).toString();
