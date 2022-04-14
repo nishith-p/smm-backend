@@ -163,57 +163,41 @@ export class StudentsService {
    */
   async importExcel(file: Express.Multer.File) {
     try {
-      if (file == undefined) {
-        const error = 'File not found';
-        throw new BadRequestException({
-          success: false,
-          error: error,
-          data: null,
-        });
-      } else {
-        let students = [];
-        let workbook = new ExcelJS.Workbook();
+      let students = [];
+      let workbook = new ExcelJS.Workbook();
 
-        await workbook.xlsx.load(file.buffer).then(() => {
-          let sheet = workbook.getWorksheet(1);
+      await workbook.xlsx.load(file.buffer).then(() => {
+        let sheet = workbook.getWorksheet(1);
 
-          for (let i = 2; i <= sheet.actualRowCount; i++) {
-            let student = {
-              name: '',
-              email: '',
-              dob: '',
-              age: '',
-            };
+        for (let i = 2; i <= sheet.actualRowCount; i++) {
+          let student = {
+            name: '',
+            email: '',
+            dob: '',
+            age: '',
+          };
 
-            let formattedDate = moment(
-              new Date(sheet.getRow(i).getCell(3).toString()),
-            ).format('YYYY-MM-DD');
+          let formattedDate = moment(
+            new Date(sheet.getRow(i).getCell(3).toString()),
+          ).format('YYYY-MM-DD');
 
-            let currentAge = moment().diff(formattedDate, 'years');
+          let currentAge = moment().diff(formattedDate, 'years');
 
-            student.name = sheet.getRow(i).getCell(1).toString();
-            student.email = sheet.getRow(i).getCell(2).toString();
-            student.dob = formattedDate;
-            student.age = currentAge.toString();
+          student.name = sheet.getRow(i).getCell(1).toString();
+          student.email = sheet.getRow(i).getCell(2).toString();
+          student.dob = formattedDate;
+          student.age = currentAge.toString();
 
-            // for (var j = 1; j <= sheet.actualColumnCount; j++) {
-            //   student[Object.keys(student)[j - 1]] = sheet
-            //     .getRow(i)
-            //     .getCell(j)
-            //     .toString();
-            // }
+          students.push(student);
+        }
 
-            students.push(student);
-          }
-
-          //Write the DB code here
-          console.log(students);
-        });
-      }
+        //Write the DB code here
+        console.log(students);
+      });
     } catch (error) {
       throw new BadRequestException({
         success: false,
-        error: error,
+        error: error.message,
         data: null,
       });
     }
