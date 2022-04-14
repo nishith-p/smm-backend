@@ -1,18 +1,10 @@
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { execFile } from 'child_process';
-import { sign } from 'crypto';
-import { Workbook } from 'exceljs';
-import { createReadStream, createWriteStream } from 'fs';
-import { userInfo } from 'os';
-import { stringify } from 'querystring';
-import readXlsxFile from 'read-excel-file';
-import { BaseController } from 'src/common/base.controller';
+import * as moment from 'moment';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
@@ -167,39 +159,49 @@ export class StudentsService {
   }
 
   /**
-   * Import Excel
+   * Import Excel.
    */
   async importExcel(file: Express.Multer.File) {
     try {
       if (file == undefined) {
-        throw new BadRequestException();
+        const error = 'File not found';
+        throw new BadRequestException({
+          success: false,
+          error: error,
+          data: null,
+        });
       } else {
         let students = [];
+        let workbook = new ExcelJS.Workbook();
 
-        const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(file.buffer).then(() => {
-          var sheet = workbook.getWorksheet('Sheet1');
-          console.log(sheet.actualRowCount);
+          let sheet = workbook.getWorksheet(1);
 
-          for (var i = 2; i <= sheet.actualRowCount; i++) {
+          for (let i = 2; i <= sheet.actualRowCount; i++) {
             let student = {
-              id: '',
-              title: '',
-              description: '',
-              published: '',
+              name: '',
+              email: '',
+              dob: '',
+              age: '',
             };
 
-            for (var j = 1; j <= sheet.actualColumnCount; j++) {
-              student[Object.keys(student)[j - 1]] = sheet
-                .getRow(i)
-                .getCell(j)
-                .toString();
-            }
+            let formattedDate = moment(
+              new Date(sheet.getRow(i).getCell(3).toString()),
+            ).format('YYYY-MM-DD');
 
-            /**
-             * Get DOB and subtract from current date
-             * Assign it to student.dob
-             */
+            let currentAge = moment().diff(formattedDate, 'years');
+
+            student.name = sheet.getRow(i).getCell(1).toString();
+            student.email = sheet.getRow(i).getCell(2).toString();
+            student.dob = formattedDate;
+            student.age = currentAge.toString();
+
+            // for (var j = 1; j <= sheet.actualColumnCount; j++) {
+            //   student[Object.keys(student)[j - 1]] = sheet
+            //     .getRow(i)
+            //     .getCell(j)
+            //     .toString();
+            // }
 
             students.push(student);
           }
