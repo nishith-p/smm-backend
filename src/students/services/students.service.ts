@@ -163,9 +163,11 @@ export class StudentsService {
    */
   async importExcel(file: Express.Multer.File) {
     try {
+      let successResponseData;
       let students = [];
       let formattedDate;
       let currentAge;
+
       let workbook = new ExcelJS.Workbook();
 
       await workbook.xlsx.load(file.buffer).then(() => {
@@ -192,10 +194,16 @@ export class StudentsService {
 
           students.push(student);
         }
-
-        //Write the DB code here
-        console.log(students);
       });
+
+      successResponseData = await this.studentsRepo
+        .createQueryBuilder('students')
+        .insert()
+        .into(Student)
+        .values(students)
+        .execute();
+
+      return successResponseData;
     } catch (error) {
       throw new BadRequestException({
         success: false,

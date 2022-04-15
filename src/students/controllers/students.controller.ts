@@ -38,13 +38,6 @@ export class StudentsController extends BaseController {
     return this.created(res, studentObj);
   }
 
-  // @Get()
-  // async findAll(@Req() req: Request, @Res() res: Response) {
-  //   const studentsObj = await this.studentsService.findAll();
-
-  //   return this.ok(res, studentsObj);
-  // }
-
   @Get()
   async findAll(@Req() req: Request, @Res() res: Response) {
     const builder = await this.studentsService.findAllByQuery('students');
