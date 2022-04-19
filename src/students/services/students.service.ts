@@ -23,8 +23,13 @@ export class StudentsService {
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
     let successResponseData;
     let passRequestData;
+    let formattedDate;
 
-    const { name, email, dob, age } = createStudentDto;
+    let { name, email, dob, age } = createStudentDto;
+
+    formattedDate = moment(new Date(dob)).format('YYYY-MM-DD');
+
+    age = moment().diff(formattedDate, 'years').toString();
 
     try {
       passRequestData = this.studentsRepo.create({
@@ -113,8 +118,13 @@ export class StudentsService {
   ): Promise<Student> {
     let successResponseData;
     let checkResponseData;
+    let formattedDate;
 
-    const { name, email, dob, age } = updateStudentDto;
+    let { name, email, dob, age } = updateStudentDto;
+
+    formattedDate = moment(new Date(dob)).format('YYYY-MM-DD');
+
+    age = moment().diff(formattedDate, 'years').toString();
 
     checkResponseData = await this.findOne(id);
 
