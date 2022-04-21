@@ -4,8 +4,6 @@ import { StudentsController } from './controllers/students.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Student } from './entities/student.entity';
 import { BullModule } from '@nestjs/bull';
-import { UploadController } from './controllers/upload.controller';
-import { UploadProducerService } from './services/upload.producer.service';
 import { UploadConsumer } from './services/upload.consumer';
 
 @Module({
@@ -14,7 +12,7 @@ import { UploadConsumer } from './services/upload.consumer';
     BullModule.forRoot({ redis: { host: 'localhost', port: 5003 } }),
     BullModule.registerQueue({ name: 'import-queue' }),
   ],
-  controllers: [StudentsController, UploadController],
-  providers: [StudentsService, UploadProducerService, UploadConsumer],
+  controllers: [StudentsController],
+  providers: [StudentsService, UploadConsumer],
 })
 export class StudentsModule {}

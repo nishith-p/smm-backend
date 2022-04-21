@@ -50,16 +50,14 @@ export class UploadConsumer {
         }
       });
 
-      console.log(students);
-
-      await this.studentsRepo
+      successResponseData = await this.studentsRepo
         .createQueryBuilder('students')
         .insert()
         .into(Student)
         .values(students)
         .execute();
 
-      // return successResponseData;
+      return successResponseData;
     } catch (error) {
       throw new BadRequestException({
         success: false,

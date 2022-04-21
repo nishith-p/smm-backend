@@ -3,8 +3,10 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UploadedFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import * as moment from 'moment';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from '../dto/create-student.dto';
@@ -16,6 +18,7 @@ const ExcelJS = require('exceljs');
 export class StudentsService {
   constructor(
     @InjectRepository(Student) private studentsRepo: Repository<Student>,
+    @InjectQueue('import-queue') private queue: Queue,
   ) {}
 
   /**
@@ -222,5 +225,12 @@ export class StudentsService {
         data: null,
       });
     }
+  }
+
+  /**
+   * Import Excel (with saving and queues)
+   */
+  async uploadExcel(@UploadedFile() file) {
+    await this.queue.add('import-excel', { file: file });
   }
 }
