@@ -17,11 +17,15 @@ import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Request, Response } from 'express';
 import { BaseController } from 'src/common/base.controller';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('students')
 export class StudentsController extends BaseController {
   // /                       get, post
   // /:id                    get, put, delete
+  // /upload                 post
+  // /import                 post
 
   constructor(private readonly studentsService: StudentsService) {
     super();
@@ -94,7 +98,7 @@ export class StudentsController extends BaseController {
     return this.ok(res, studentObj);
   }
 
-  @Post('upload')
+  @Post('import')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
@@ -103,6 +107,28 @@ export class StudentsController extends BaseController {
   ) {
     const fileObj = await this.studentsService.importExcel(file);
 
+    return this.ok(res, fileObj);
+  }
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './files',
+        filename: (req, file, cb) => {
+          const randomName = Date.now();
+
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async uploadExcel(
+    @UploadedFile() file,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const fileObj = await this.studentsService.uploadExcel(file);
     return this.ok(res, fileObj);
   }
 }
