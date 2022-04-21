@@ -17,11 +17,14 @@ import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Request, Response } from 'express';
 import { BaseController } from 'src/common/base.controller';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('students')
 export class StudentsController extends BaseController {
   // /                       get, post
   // /:id                    get, put, delete
+  // /upload                 post
 
   constructor(private readonly studentsService: StudentsService) {
     super();

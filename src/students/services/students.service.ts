@@ -1,3 +1,4 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   Injectable,
@@ -169,7 +170,7 @@ export class StudentsService {
   }
 
   /**
-   * Import Excel.
+   * Import Excel (without saving and queue).
    */
   async importExcel(file: Express.Multer.File) {
     try {
