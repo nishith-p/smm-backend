@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import * as moment from 'moment';
+import { AppGateway } from 'src/app.gateway';
 import { Repository } from 'typeorm';
 import { Student } from '../entities/student.entity';
 const ExcelJS = require('exceljs');
@@ -11,6 +12,7 @@ const ExcelJS = require('exceljs');
 export class UploadConsumer {
   constructor(
     @InjectRepository(Student) private studentsRepo: Repository<Student>,
+    private gateway: AppGateway,
   ) {}
 
   @Process('import-excel')
@@ -57,8 +59,12 @@ export class UploadConsumer {
         .values(students)
         .execute();
 
+      this.gateway.wss.emit('newUpload', { isComplete: true });
+
       return successResponseData;
     } catch (error) {
+      this.gateway.wss.emit('newUpload', { isComplete: false });
+
       throw new BadRequestException({
         success: false,
         error: error.message,

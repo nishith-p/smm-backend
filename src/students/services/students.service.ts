@@ -231,6 +231,6 @@ export class StudentsService {
    * Import Excel (with saving and queues)
    */
   async uploadExcel(@UploadedFile() file) {
-    await this.queue.add('import-excel', { file: file } /*{ delay: 10000 }*/);
+    await this.queue.add('import-excel', { file: file }, { delay: 10000 });
   }
 }
